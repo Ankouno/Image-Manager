@@ -5,7 +5,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace CompComm {
+  /// <summary>Class responsible for preparing the Kestrel server..</summary>
   public class Startup {
+    /// <summary>Startup method for setting up the appsettings.json file.</summary>
     public Startup(IHostingEnvironment env) {
       var builder = new ConfigurationBuilder()
         .SetBasePath(env.ContentRootPath)
@@ -15,9 +17,11 @@ namespace CompComm {
       Configuration = builder.Build();
     }
 
+    /// <summary>Configuration object for MVC.</summary>
     public IConfigurationRoot Configuration { get; }
-
-    // This method gets called by the runtime. Use this method to add services to the container.
+    
+    /// <summary>This method gets called by the runtime.
+    /// Use this method to add services to the container.</summary>
     public void ConfigureServices(IServiceCollection services) {
       // Add framework services.            
       services.AddMvc();
@@ -25,11 +29,11 @@ namespace CompComm {
       services.AddSingleton<IConfiguration>(Configuration);
     }
 
-    // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
+    /// <summary>This method gets called by the runtime.
+    /// Use this method to configure the HTTP request pipeline.</summary>
     public void Configure(IApplicationBuilder app, IHostingEnvironment env, ILoggerFactory loggerFactory) {
-      // Uncomment these lines when debugging
-      loggerFactory.AddConsole(Configuration.GetSection("Logging"));
-      loggerFactory.AddDebug();            
+      //loggerFactory.AddConsole(Configuration.GetSection("Logging"));
+      //loggerFactory.AddDebug();            
 
       app.UseCors(builder => {
         builder.AllowAnyHeader();
