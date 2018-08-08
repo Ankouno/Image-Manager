@@ -1,0 +1,35 @@
+{
+	"name": "Image Saver",
+	"version": "1.0",
+	"description": "Save images quickly from Twitter.",
+	"manifest_version": 2,
+	"background": {
+		"scripts": ["manager.js"],
+		"persistent": false
+	},
+	"content_scripts": [{
+	  "matches": ["https://twitter.com/*"],
+		"css": [
+			"resources/jquery-ui.css"
+		],
+		"js": [
+			"resources/jquery.min.js",
+			"resources/jquery-ui.min.js",
+			"resources/piexif.js",
+			"dialog.js"
+		]
+	}],
+  "web_accessible_resources": [
+    "resources/images/*"
+  ],
+	"permissions": [
+		"downloads",
+		"tabs"
+	],
+	"icons": {
+		"16": "icons/16.png",
+		"32": "icons/32.png",
+		"48": "icons/48.png",
+		"128": "icons/128.png"
+	}
+}

@@ -1,0 +1,17 @@
+{
+	"artists": [
+		{
+		  "nicknames": [""],
+			"folder":    "",
+			"twitter":   [""],
+			"tumblr":    [""],
+			"fa":        [""],
+			"pixiv":     [""],
+			"other":     [""]
+		}
+	],
+
+	"characters": {
+		"exveemon": "exveemon"
+	}
+}
