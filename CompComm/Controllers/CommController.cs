@@ -49,6 +49,7 @@ namespace CompComm.Controllers {
       var base64Data = Regex.Match(img.Data, @"data:image/(?<type>.+?),(?<data>.+)").Groups["data"].Value;
       var binData = Convert.FromBase64String(base64Data);
 
+      img.Folder = img.Folder ?? "";
       var path = Path.Combine(BASE_PHYSICAL_PATH, img.Folder);
       var filename = Path.Combine(path, img.Filename);
       if (!IOFile.Exists(filename)) {

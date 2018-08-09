@@ -1,0 +1,64 @@
+﻿#save-form * {
+  box-sizing: border-box;
+}
+#save-form h2,
+#save-form h4 {
+  color: gray;
+}
+#save-form > table {
+  table-layout: fixed;
+}
+#save-form .fields {
+  height: 100%;
+  display: flex;
+  flex-flow: column wrap;
+  align-content: space-between;
+}
+#save-form .fields > div {
+  width: 100%;
+  display: flex;
+  flex-flow: row;
+}
+#save-form .fields > div > div {
+  width: 75%;
+}
+#save-form .fields > div > div:nth-child(2n+1) {
+  width: 25%;
+  padding-top: 4px;
+  padding-right: 5px;
+  text-align: right;
+}
+#save-form .fields > div > div.icons {
+  width: 100%;
+  margin-top: auto;
+}
+#save-form .fields input {
+  padding: 3px 5px 1px;
+  font-size: 10pt;
+}
+#save-form #imgArtist {
+  display: inline-block;
+  padding: 0 3px;
+}
+#save-form #imgArtist:focus {
+  box-shadow: 0 -1px 3px 2px #181818, 0 -1px 3px 4px #808080;
+}
+#save-form .icons > a {
+  display: inline-block;
+  height: 32px;
+  width: 32px;
+  margin-right: 5px;
+  background-image: url('chrome-extension://__MSG_@@extension_id__/css/mediaicons.png');
+}
+#save-form .icons > a.tumblr {
+  background-position: 0 0;
+}
+#save-form .icons > a.twitter {
+  background-position: 32px 0;
+}
+#save-form .icons > a.pixiv {
+  background-position: 0 32px;
+}
+#save-form .icons > a.furaffinity {
+  background-position: 32px 32px;
+}

@@ -38,8 +38,9 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="database.json" />
-    <Content Include="dialog.js" />
+    <Content Include="css\mediaicons.png" />
+    <Content Include="dialogue.js" />
+    <Content Include="css\dialogue.less" />
     <Content Include="icons\128.png" />
     <Content Include="icons\16.png" />
     <Content Include="icons\32.png" />
@@ -79,6 +80,9 @@
     <PackageCertificateKeyFile>App1_TemporaryKey.pfx</PackageCertificateKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputPath />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <OutputPath />
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath32)\Microsoft\VisualStudio\v$(VisualStudioVersion)\$(WMSJSProjectDirectory)\Microsoft.VisualStudio.$(WMSJSProject).targets" />
