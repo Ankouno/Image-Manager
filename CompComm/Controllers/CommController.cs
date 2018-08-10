@@ -68,10 +68,19 @@ namespace CompComm.Controllers {
     /// <returns>An array of all the found folder paths.</returns>
     [HttpGet("getFolders")]
     public string[] GetFolders(string folder = "") {
-      Console.WriteLine("Getting directories.");
+      Console.WriteLine("Getting directories in \\{0}", folder);
       if (folder is null) { folder = ""; }
       folder = Path.Combine(BASE_PHYSICAL_PATH, folder);
       return Directory.GetDirectories(folder);
+    }
+
+    /// <summary>Check whether a specified file exists.</summary>
+    /// <param name="filepath">The path to the file from the base directory to check.</param>
+    /// <returns>True if the file exists.</returns>
+    [HttpGet("doesFileExist")]
+    public bool DoesFileExist(string filepath = "") {
+      Console.WriteLine("Checking if file exists: {0}", filepath);
+      return IOFile.Exists(Path.Combine(BASE_PHYSICAL_PATH, filepath));
     }
 
     /// <summary>Find an artist by name.</summary>

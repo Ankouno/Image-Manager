@@ -38,6 +38,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="css\FolderIcons.png" />
     <Content Include="css\mediaicons.png" />
     <Content Include="dialogue.js" />
     <Content Include="css\dialogue.less" />

@@ -148,7 +148,8 @@ var dialogue;
 
 		toDataURL(url, function(img) {
 			$("#save-form").off('dialogopen').on('dialogopen', function() {
-				var $this = $(this);
+        var $this = $(this);
+        $this.find("#imgFilename").val("");
 				$this.find('#imgPreview').attr('src', img).parent().attr('href', url);
 				$this.find('#imgArtist').text(author)
 				$this.find('#imgTitle').val(title);
@@ -165,14 +166,14 @@ var dialogue;
 	$('body').append(`
 		<div id='dialogContainer' class='jui'></div>
 		<div id='save-form'>
-			<h2>Artist found: <span id='imgArtist' contenteditable='true'>(unknown artist)</span></h2><br/>
-			<table style='width:100%;height: 85%;'><tr style='vertical-align:top'>
+			<h2>Artist found: <span id='imgArtist' contenteditable='true' spellcheck='false'>(unknown artist)</span></h2><br/>
+			<table style='width:100%;height: 90%;'><tr style='vertical-align:top'>
 			  <td style='padding-right:3%'><a target='_blank'><img id='imgPreview' style='max-width:100%;max-height:275px;'></a></td>
 			  <td><div class='fields'>
 			    <div><div><h4>Filename:</h4></div><div><input id='imgFilename' autofocus/></div></div>
 			    <div><div><h4>Title:</h4></div>   <div><input id='imgTitle'/></div></div>
 			    <div><div><h4>Tags:</h4></div>    <div><input id='imgTags' /></div></div>
-          <div><div><h4>Folder:</h4></div>  <div></div></div>
+          <div style='flex-grow:1'><div><h4>Folder:</h4></div>  <div id='imgFolder'></div></div>
           <div><div class='icons'></div></div>
 			  </div></td>
 			</tr></table>
@@ -193,11 +194,7 @@ var dialogue;
 		appendTo: '#dialogContainer'
 	});
 
-  dialogue.find("")
-
-  /**
-   * Write exif data from the dialogue to the image and download to the user's computer.
-   */
+  /** Write exif data from the dialogue to the image and download to the user's computer. */
 	function saveFile() {
 		// write exif data
 		var img = $('#imgPreview').attr('src');
@@ -211,9 +208,18 @@ var dialogue;
     callComp("download", true, {
       data: img,
       folder: "",
-      filename: (document.getElementById('imgFilename').value || "file") + ".jpg"
+      filename: (document.getElementById('imgFilename').value || new Date().getTime()) + ".jpg"
     });
-	}
+  }
+
+  /** When the filename changes, make sure it wasn't  */
+  dialogue.find("#imgFilename").on("keyup paste", function () {
+    callComp("doesFileExist", false, { filepath: "" + this.value + ".jpg" }, function (fileExists) {
+      var label = dialogue.find("#imgFilename").parent().prev().children();
+      if (fileExists) { label.addClass("error").attr("title", "File already exists."); }
+      else { label.removeClass("error").attr("title", ""); }
+    })
+  });
 
 
 	//-- Communication functions ---------------------------------------------------------------------------
@@ -246,13 +252,62 @@ var dialogue;
     callComp("fetchArtist", false, { name: name }, function (msg) {
       var $icons = dialogue.find(".icons");
       $icons.empty();
-      for (var i = 0; i < msg.tumblr.length; i++) { $icons.append("<a target='_blank' class='tumblr' href='http://" + msg.tumblr[i] + ".tumblr.com'>"); }
-      for (var i = 0; i < msg.twitter.length; i++) { $icons.append("<a target='_blank' class='twitter' href='https://www.twitter.com/" + msg.twitter[i] + "'>"); }
-      for (var i = 0; i < msg.pixiv.length; i++) { $icons.append("<a target='_blank' class='pixiv' href='https://www.pixiv.net/member.php?id=" + msg.pixiv[i] + "'>"); }
-      for (var i = 0; i < msg.fa.length; i++) { $icons.append("<a target='_blank' class='furaffinity' href='https://www.furaffinity.net/user/" + msg.fa[i] + "'>"); }
-      if (callback) { callback(author); }
+      if (msg) {
+        for (var i = 0; i < msg.tumblr.length; i++) { $icons.append("<a tabindex='-1' target='_blank' class='tumblr' href='http://" + msg.tumblr[i] + ".tumblr.com'>"); }
+        for (var i = 0; i < msg.twitter.length; i++) { $icons.append("<a tabindex='-1' target='_blank' class='twitter' href='https://www.twitter.com/" + msg.twitter[i] + "'>"); }
+        for (var i = 0; i < msg.pixiv.length; i++) { $icons.append("<a tabindex='-1' target='_blank' class='pixiv' href='https://www.pixiv.net/member.php?id=" + msg.pixiv[i] + "'>"); }
+        for (var i = 0; i < msg.fa.length; i++) { $icons.append("<a tabindex='-1' target='_blank' class='furaffinity' href='https://www.furaffinity.net/user/" + msg.fa[i] + "'>"); }
+        openPath("", msg.folder, function (html) {
+          dialogue.find("#imgFolder").html(html);
+        });
+      }
+      if (callback) { callback(msg); }
     })
   }
+
+  /**
+   * Recursive function to build a folder structure from a specified base.
+   * @param {string} base The base path to the folder you want to start opening from.
+   * @param {string} filepath The folder currently being opened.
+   * @param {Function} callback A function to call back once the children are received.
+   * @param {string} child The name of an opened child, if there is one. Keep initially blank.
+   * @param {Element} children All the subdirectories of the child, if there are any. Keep initially blank.
+   */
+  function openPath(base, filepath, callback, child, children) {
+    callComp("GetFolders", false, { folder: base + filepath }, function (msg) {
+      var elems = [];
+      var f = filepath.substring(filepath.lastIndexOf("\\") + 1);
+      if (typeof child == "undefined") { child = f; }
+      for (var i = 0; i < msg.length; i++) {
+        var c = msg[i].substring(msg[i].lastIndexOf("\\") + 1);
+        var elem = $("<div class='folder' data-folder='" + msg[i] + "'><span>" + c + "</span></div>")
+        if (c == child) { elem.append(children); elem.attr("data-selected", true); }
+        elems.push(elem);
+      }
+      if (filepath != "") {
+        openPath(base, filepath.substring(0, filepath.lastIndexOf("\\")), function (e) {
+          callback(e);
+        }, f, elems);
+      } else {
+        callback(elems);
+      }
+    });
+  }
+
+  dialogue.on("click", ".folder", function (e) {
+    e.stopPropagation();
+    let $this = $(this);
+    if (this.data("selected")) {
+      $this.children().remove(".folder");
+      $this.removeAttr("data-selected"); // todo: test this shit
+    } else {
+      dialogue.find("#imgFolder div[data-selected]").removeAttr("data-selected");
+      $this.parentsUntil("#imgFolder").addBack().attr("data-selected", true);
+      openPath($this.data("folder") + "\\", "", function (html) {
+        $this.append(html);
+      })
+    }
+  });
 
 
 	//-- Helper functions ----------------------------------------------------------------------------------

@@ -22,7 +22,8 @@
 	}],
   "web_accessible_resources": [
     "resources/images/*",
-    "css/mediaicons.png"
+    "css/mediaicons.png",
+    "css/foldericons.png"
   ],
 	"permissions": [
 		"downloads",

@@ -1,7 +1,9 @@
 ﻿#save-form {
+  overflow: hidden;
   * { box-sizing: border-box; }
 
   h2, h4 { color: gray; }
+  .error { color: red; text-decoration: double; }
   > table { table-layout: fixed; }
 
   .fields {
@@ -23,8 +25,9 @@
         padding-right: 5px;
         text-align: right;
       }
-      > div.icons { width: 100%; margin-top: auto; }
+      > div.icons { width: 100%; }
     }
+    > div:last-child { margin-top: auto; }
 
     input {
       padding: 3px 5px 1px;
@@ -35,17 +38,46 @@
   #imgArtist {
     display: inline-block;
     padding: 0 3px;
+    outline: 0;
     &:focus { box-shadow: 0 -1px 3px 2px #181818, 0 -1px 3px 4px #808080; }
+  }
+
+  #imgFolder {
+    overflow: auto;
+    margin-top: 8px;
+    .folder {
+      font-size: 8pt;
+      display: block;
+      padding-left: 10px;
+      >span, &:before {
+        margin-left: 3px;
+        cursor: pointer;
+        &:hover { opacity: 0.5; }
+      }
+      &:before {
+        content: "";
+        float: left; margin-left: -10px;
+        background: url('chrome-extension://__MSG_@@extension_id__/css/foldericons.png') no-repeat border-box;
+        width: 14px; height: 12px;
+        background-position-x: -15px;
+      }
+      &[data-selected=true] {
+        >span { color: lightblue; }
+        &:before { background-position-x: 0px; }
+      }
+    }
   }
 
   .icons > a {
     display: inline-block;
     height: 32px; width: 32px;
-    margin-right: 5px;
-    background-image: url('chrome-extension://__MSG_@@extension_id__/css/mediaicons.png');
-         &.tumblr { background-position:    0 0; }
-        &.twitter { background-position: 32px 0; }
-          &.pixiv { background-position:    0 32px; }
-    &.furaffinity { background-position: 32px 32px; }
+    margin-left: 5px;
+    background: url('chrome-extension://__MSG_@@extension_id__/css/mediaicons.png') no-repeat;
+         &.tumblr { background-position:     0 0; }
+        &.twitter { background-position: -40px 0; }
+          &.pixiv { background-position:     0 -40px; }
+    &.furaffinity { background-position: -40px -40px; }
+    &:hover { opacity: 0.5; }
+    &:active { filter: drop-shadow(0 0 5px lightgray); }
   }
 }
