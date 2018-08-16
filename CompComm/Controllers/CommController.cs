@@ -25,9 +25,13 @@ namespace CompComm.Controllers {
       BASE_PHYSICAL_PATH = config["BASE_PHYSICAL_PATH"];
       if (db == null) {
         string dbPath = Path.Combine(BASE_PHYSICAL_PATH, "database.json");
-        using (StreamReader r = new StreamReader(dbPath)) {
-          db = JObject.Parse(r.ReadToEnd());
+        if (!IOFile.Exists(dbPath)) {
+          Console.WriteLine("Could not find database. Creating at {0}", dbPath);
+          using (StreamWriter w = new StreamWriter(IOFile.Create(dbPath), System.Text.Encoding.UTF8))
+            w.Write("{\"artists\": [], \"characters\": []}");
         }
+        using (StreamReader r = new StreamReader(dbPath))
+          db = JObject.Parse(r.ReadToEnd());
       }
     }
 
@@ -89,12 +93,10 @@ namespace CompComm.Controllers {
     [HttpGet("fetchArtist")]
     public JsonResult FetchArtist(string name) {
       Console.WriteLine("Fetching artist: {0}", name);
-      foreach (Artist a in db["artists"].ToObject<List<Artist>>()) {
-        if (a.Nicknames.Contains(name, StringComparer.OrdinalIgnoreCase)) {
-          return Json(a);
-        }
-      }
-      return Json(null);
+      JArray artists = (JArray)db["artists"];
+      return Json(artists.Children<JObject>().FirstOrDefault(
+        a => a["Nicknames"].ToObject<string[]>().Contains(name, StringComparer.OrdinalIgnoreCase)
+      ));
     }
 
     /// <summary>Adds or updates an artist in the database.</summary>
@@ -109,7 +111,7 @@ namespace CompComm.Controllers {
       if (update) {
         // Find existing artist by searching for their name.
         JObject a = artists.Children<JObject>().FirstOrDefault(
-          o => ((JArray)o["Nicknames"]).ToObject<string[]>().Intersect(artist.Nicknames, StringComparer.OrdinalIgnoreCase).Any()
+          o => o["Nicknames"].ToObject<string[]>().Intersect(artist.Nicknames, StringComparer.OrdinalIgnoreCase).Any()
         );
 
         if (a != null) {
@@ -131,9 +133,8 @@ namespace CompComm.Controllers {
 
     private void UpdateDatabase() {
       string dbPath = Path.Combine(BASE_PHYSICAL_PATH, "database.json");
-      using (StreamWriter w = new StreamWriter(dbPath, false, System.Text.Encoding.UTF8)) {
+      using (StreamWriter w = new StreamWriter(dbPath, false, System.Text.Encoding.UTF8))
         w.Write(db.ToString());
-      }
     }
   }
 }
