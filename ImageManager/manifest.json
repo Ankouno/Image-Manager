@@ -3,10 +3,10 @@
 	"version": "1.0",
 	"description": "Save images quickly from sites.",
 	"manifest_version": 2,
-	"background": {
-		"scripts": ["manager.js"],
-		"persistent": false
-	},
+  "background": {
+    "scripts": ["manager.js"], 
+    "persistent": false
+  },
 	"content_scripts": [{
 	  "matches": ["https://twitter.com/*"],
 		"css": [

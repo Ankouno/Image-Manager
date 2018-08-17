@@ -58,6 +58,7 @@
   margin-top: 8px;
 }
 #save-form #imgFolder .folder {
+  outline: 0;
   font-size: 8pt;
   display: block;
   padding-left: 10px;
