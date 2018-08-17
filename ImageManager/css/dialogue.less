@@ -50,11 +50,16 @@
       display: block;
       padding-left: 10px;
       border-left: 1px dotted #2d2d2d;
+      >span {
+        display: inline-block;
+        width: calc(~"100% - 7px");
+        &:hover { opacity: 0.5;}
+      }
+      &:focus > span { background-color: rgba(64, 80, 180, 0.2); }
       >span, &:before {
         margin-left: 3px;
         cursor: pointer;
         user-select: none;
-        &:hover { opacity: 0.5; }
       }
       &:before {
         content: "";

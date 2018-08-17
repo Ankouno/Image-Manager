@@ -130,8 +130,9 @@ const baseurl = "http://localhost:1996/";
    * Gather information from around the image to initialize a dialog with.
    * @param {Element} container The container of the element to pull information relative to.
    */
-	function openDialogue(container) {
+  function openDialogue(container) {
     var url, author, title;
+    var img = new Image();
     switch (domain) {
       case "Twitter":
         author = $(container).closest('.content, .permalink-tweet, .Gallery-content').find('.username b').first().text();
@@ -149,18 +150,21 @@ const baseurl = "http://localhost:1996/";
     }
     username = author;
 
-		toDataURL(url, function(img) {
-			$("#save-form").off('dialogopen').on('dialogopen', function() {
+    img.crossOrigin = "anonymous";
+    img.onload = function () {
+      img = convertImageToJPG(this);
+      $("#save-form").off('dialogopen').on('dialogopen', function () {
         var $this = $(this);
         $this.find("#imgFilename").val("");
-				$this.find('#imgPreview').attr('src', img).parent().attr('href', url);
-				$this.find('#imgArtist').text(author)
-				$this.find('#imgTitle').val(title);
+        $this.find('#imgPreview').attr('src', img).parent().attr('href', url);
+        $this.find('#imgArtist').text(author)
+        $this.find('#imgTitle').val(title);
         $this.find('#imgTags').val("");
         getAuthor(author);
-			});
-			dialogue.dialog('open');
-		})
+      });
+      dialogue.dialog('open');
+    }
+    img.src = url;
 	}
 
 
@@ -263,16 +267,6 @@ const baseurl = "http://localhost:1996/";
       var $icons = dialogue.find(".icons");
       $icons.empty();
       if (msg) {
-        if (domain == "Pixiv") {
-          // pixiv artist; check if pixiv id needs to be added
-        } else if (msg[domain].indexOf(name) == -1) {
-          // artist exists in database, but this page isn't registered for them
-          if (confirm("Add artist '" + username + "' to the database under '" + name + "'?")) {
-            msg[domain].push(username);
-            if (msg.Nicknames.indexOf(username) == -1) msg.Nicknames.push(username);
-            callComp("updateArtist", true, { "artist": msg, "update": true });
-          }
-        }
         var str = "<a tabindex='-1' target='_blank' class='{0}' title='{1}' href='{2}'>"
         for (var i = 0; i < msg.Tumblr.length; i++)
           $icons.append(str.format("tumblr", msg.Tumblr[i], "http://" + msg.Tumblr[i] + ".tumblr.com"));
@@ -282,10 +276,6 @@ const baseurl = "http://localhost:1996/";
           $icons.append(str.format("pixiv", msg.Pixiv[i], "https://www.pixiv.net/member.php?id=" + msg.Pixiv[i]));
         for (var i = 0; i < msg.FA.length; i++)
           $icons.append(str.format("furaffinity", msg.FA[i], "https://www.furaffinity.net/user/" + msg.FA[i]));
-
-      } else {
-        // brand new artist; add to database
-
       }
       openPath("", msg? msg.Folder:"", function (html) {
         dialogue.find("#imgFolder").html(html);
@@ -349,20 +339,26 @@ const baseurl = "http://localhost:1996/";
         $this.attr("data-selected", true).click();
         break;
       case 38:  // up
-        if (!$this.attr("data-selected") && $this.parent('.folder')[0]) { $this = $this.parent('.folder'); }
+        if (e.shiftKey) {
+          var $parent = $this.parent('.folder');
+          if (!$parent[0]) {
+            $this = $($this.prev()[0] || $this[0]);
+            $this.focus();
+            break;
+          } else { $this = $parent; }
+        } 
         var prev = $this.prev('.folder')[0];
         if (prev) { if ($(prev).children()[1]) { prev = $(prev).children().last()[0]; } }
-        if (!prev) { prev = $this.parent('.folder')[0] || $this[0]; }
-        $(prev).removeAttr("data-selected").click().focus();
+        else { prev = $this.parent('.folder')[0] || $this[0]; }
+        $(prev).focus();
         break;
       case 39:  // right
         $this.removeAttr("data-selected").click();
         break;
       case 40:  // down
-        var next = $this.children('.folder')[0] || $this.next()[0];
-        if (!next || (!$this.attr("data-selected") && $this.parent('.folder')[0])) { next = $this.parent().next()[0]; }
-        if (!next) { next = this; }
-        $(next).removeAttr("data-selected").click().focus()
+        if (e.shiftKey) { $this = $($this.parent().next()[0] || $this.next()[0]); }
+        var next = $this.children('.folder')[0] || $this.next()[0] || $this.parent().next()[0] || $this[0];
+        $(next).focus();
         break;
     }
     e.preventDefault();
@@ -426,15 +422,28 @@ const baseurl = "http://localhost:1996/";
 		return data;
   }
 
+  /**
+   * Convert an image to JPG from any format using a canvas.
+   * @param {HTMLImageElement} image An image element to convert.
+   * @returns The converted image as a data URL.
+   */
+  function convertImageToJPG(image) {
+    var canvas = document.createElement("canvas");
+    canvas.width = image.width;
+    canvas.height = image.height;
+    var ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(image, 0, 0);
+    return canvas.toDataURL("image/jpeg", 0.95);
+  }
+
   if (!String.prototype.format) {
     /** Format string function. */
     String.prototype.format = function () {
       var args = arguments;
       return this.replace(/{(\d+)}/g, function (match, number) {
-        return typeof args[number] != 'undefined'
-          ? args[number]
-          : match
-          ;
+        return typeof args[number] != 'undefined'? args[number] : match;
       });
     };
   }

@@ -63,15 +63,21 @@
   padding-left: 10px;
   border-left: 1px dotted #2d2d2d;
 }
+#save-form #imgFolder .folder > span {
+  display: inline-block;
+  width: calc(100% - 7px);
+}
+#save-form #imgFolder .folder > span:hover {
+  opacity: 0.5;
+}
+#save-form #imgFolder .folder:focus > span {
+  background-color: rgba(64, 80, 180, 0.2);
+}
 #save-form #imgFolder .folder > span,
 #save-form #imgFolder .folder:before {
   margin-left: 3px;
   cursor: pointer;
   user-select: none;
-}
-#save-form #imgFolder .folder > span:hover,
-#save-form #imgFolder .folder:before:hover {
-  opacity: 0.5;
 }
 #save-form #imgFolder .folder:before {
   content: "";
