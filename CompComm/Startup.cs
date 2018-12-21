@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Microsoft.AspNetCore.Http.Features;
 
 namespace CompComm {
   /// <summary>Class responsible for preparing the Kestrel server..</summary>
@@ -19,13 +20,14 @@ namespace CompComm {
 
     /// <summary>Configuration object for MVC.</summary>
     public IConfigurationRoot Configuration { get; }
-    
+
     /// <summary>This method gets called by the runtime.
     /// Use this method to add services to the container.</summary>
     public void ConfigureServices(IServiceCollection services) {
       // Add framework services.            
       services.AddMvc();
       services.AddCors();
+      services.Configure<FormOptions>(x => x.ValueLengthLimit = int.MaxValue);
       services.AddSingleton<IConfiguration>(Configuration);
     }
 

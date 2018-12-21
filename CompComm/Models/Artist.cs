@@ -14,9 +14,6 @@ namespace CompComm.Models {
     /// <summary>List of any Twitter accounts.</summary>
     public string[] Twitter { get; set; } = { };
 
-    /// <summary>List of any Tumblr accounts.</summary>
-    public string[] Tumblr { get; set; } = { };
-
     /// <summary>List of any FurAffinity accounts.</summary>
     public string[] FA { get; set; } = { };
 

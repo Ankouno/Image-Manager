@@ -8,7 +8,10 @@
     "persistent": false
   },
 	"content_scripts": [{
-	  "matches": ["https://twitter.com/*"],
+    "matches": [
+      "https://twitter.com/*",
+      "https://www.pixiv.net/*"
+    ],
 		"css": [
       "resources/jquery-ui.css",
       "css/dialogue.min.css"
@@ -25,10 +28,11 @@
     "css/mediaicons.png",
     "css/foldericons.png"
   ],
-	"permissions": [
-		"downloads",
-		"tabs"
-	],
+  "permissions": [
+    "http://localhost:1996/",
+    "downloads",
+    "tabs"
+  ],
 	"icons": {
 		"16": "icons/16.png",
 		"32": "icons/32.png",

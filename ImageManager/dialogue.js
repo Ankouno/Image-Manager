@@ -26,11 +26,7 @@ const baseurl = "http://localhost:1996/";
           domain = "Twitter";
           getTwitterImage();
           break;
-        case "tumblr.com":
-          domain = "Tumblr";
-          getTumblrImage();
-          break;
-        case "pixiv.net":
+        case "www.pixiv.net":
           domain = "Pixiv";
           getPixivImage();
           break;
@@ -60,13 +56,15 @@ const baseurl = "http://localhost:1996/";
         openDialogue(ctr);
       }
     }
-
-    /** Select images from a Tumblr webpage. */
-    function getTumblrImage() {
-    }
-
+    
     /** Select images from a Pixiv webpage. */
     function getPixivImage() {
+      var ctr = $("img[src^='https://i.pximg.net']:visible:onScreen");
+      if (ctr.length > 1) {
+        $.when(pickImage(ctr)).then(function (ctr) { openDialogue(ctr); });
+      } else if (ctr.length == 1) {
+        openDialogue(ctr);
+      }
     }
 
     /** Select images from a FurAffinity webpage. */
@@ -130,7 +128,6 @@ const baseurl = "http://localhost:1996/";
    */
   function openDialogue(container) {
     var url = "", author = "", title = "";
-    var img = new Image();
     switch (domain) {
       case "Twitter":
         author = $(container).closest('.content, .permalink-tweet, .Gallery-content').find('.username b').first().text();
@@ -139,22 +136,27 @@ const baseurl = "http://localhost:1996/";
         if (url.split(':').length > 2) { url = url.substr(0, url.lastIndexOf(':')); }
         url += ":orig";
         break;
-      case "Tumblr":
-        break;
       case "Pixiv":
+        author = $("._1JDQaNI").html();
+        title = container[0].alt;
+        url = container[0].src
+          .replace(/\/c\/[0-9]+x[0-9]+(?:_[0-9]+)?\//, "/")
+          .replace(/\/img-master\//, "/img-original/")
+          .replace(/(\/[0-9]+_p[0-9]+)_[^/]*(\.[^/.]*)$/, "$1$2");
         break;
       case "FA":
         break;
     }
     username = author;
 
-    img.crossOrigin = "anonymous";
-    img.onload = function () {
-      img = convertImageToJPG(this);
+    var image = new Image();
+    image.crossOrigin = 'anonymous';
+    image.onload = function () {
+      image = convertImageToJPG(this);
       $("#save-form").off('dialogopen').on('dialogopen', function () {
         const $this = $(this);
         $this.find("#imgFilename").val("");
-        $this.find('#imgPreview').attr('src', img).parent().attr('href', url);
+        $this.find('#imgPreview').attr('src', image).parent().attr('href', url);
         $this.find('#imgArtist').text(author);
         $this.find('#imgTitle').val(title);
         $this.find('#imgTags').val("");
@@ -162,7 +164,12 @@ const baseurl = "http://localhost:1996/";
       });
       dialogue.dialog('open');
     };
-    img.src = url;
+    image.onerror = function () {
+      if (image.src.indexOf('.jpg') != -1) {
+        image.src = url.replace(".jpg", ".png");
+      }
+    }
+    image.src = url;
   }
 
 
@@ -193,8 +200,8 @@ const baseurl = "http://localhost:1996/";
     title: "Save Image",
     closeText: '',
     buttons: {
-      Save: function() { saveFile(); dialogue.dialog('close'); },
-      Cancel: function() { dialogue.dialog('close'); }
+      "Save": function() { saveFile(); dialogue.dialog('close'); },
+      "Cancel": function() { dialogue.dialog('close'); }
     },
     appendTo: '#dialogContainer'
   });
@@ -221,7 +228,8 @@ const baseurl = "http://localhost:1996/";
 
   /** When the filename changes, make sure it doesn't already exist. */
   dialogue.find('#imgFilename').on('keyup paste', function () {
-    callComp('doesFileExist', false, { filepath: `${this.value}.jpg` }, function (fileExists) {
+    var baseFolder = dialogue.find('.folder[data-selected]').last().data("folder") || "";
+    callComp('doesFileExist', false, { filepath: `${baseFolder}\\${this.value}.jpg` }, function (fileExists) {
       const label = dialogue.find("#imgFilename").parent().prev().children();
       if (fileExists) { label.addClass('error').attr('title', "File already exists."); }
       else { label.removeClass('error').attr('title', ""); }
@@ -234,6 +242,14 @@ const baseurl = "http://localhost:1996/";
     if (prevArtist && this.innerText != prevArtist)
       getAuthor(this.innerText);
     prevArtist = this.innerText;
+  });
+
+  /** When tags are added, update the folder if character found. */
+  dialogue.find("#imgTags").on('change', function () {
+    var chars = this.value.split(";");
+    if (chars.length > 0) {
+      getCharacter(chars[0]);
+    }
   });
 
 
@@ -270,8 +286,6 @@ const baseurl = "http://localhost:1996/";
       $icons.empty();
       if (msg) {
         const str = "<a tabindex='-1' target='_blank' class='{0}' title='{1}' href='{2}'>";
-        for (let i = 0; i < msg.Tumblr.length; i++)
-          $icons.append(str.format("tumblr", msg.Tumblr[i], `http://${msg.Tumblr[i]}.tumblr.com`));
         for (let i = 0; i < msg.Twitter.length; i++)
           $icons.append(str.format("twitter", msg.Twitter[i], `https://www.twitter.com/${msg.Twitter[i]}`));
         for (let i = 0; i < msg.Pixiv.length; i++)
@@ -283,6 +297,23 @@ const baseurl = "http://localhost:1996/";
         dialogue.find('#imgFolder').html(html);
         dialogue.find('.folder').first().attr('tabindex', "0");
       });
+      if (callback) { callback(msg); }
+    });
+  }
+
+  /**
+   * Get a character's information and populate related fields.
+   * @param {string} name The name of the character to fetch.
+   * @param {Function} callback A function to call after the character is obtained.
+   */
+  function getCharacter(name, callback) {
+    callComp('fetchCharacter', false, { name: name }, function (msg) {
+      if (msg && msg.Folder) {
+        openPath("", msg.Folder, function (html) {
+          dialogue.find('#imgFolder').html(html);
+          dialogue.find('.folder').first().attr('tabindex', "0");
+        });
+      }
       if (callback) { callback(msg); }
     });
   }

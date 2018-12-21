@@ -1,7 +1,6 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -84,7 +83,11 @@ namespace CompComm.Controllers {
     [HttpGet("doesFileExist")]
     public bool DoesFileExist(string filepath = "") {
       Console.WriteLine("Checking if file exists: {0}", filepath);
-      return IOFile.Exists(Path.Combine(BASE_PHYSICAL_PATH, filepath));
+      if (IOFile.Exists(Path.Combine(BASE_PHYSICAL_PATH, filepath))) {
+        Console.WriteLine("File exists!");
+        return true;
+      }
+      return false;
     }
 
     /// <summary>Find an artist by name.</summary>
@@ -94,9 +97,25 @@ namespace CompComm.Controllers {
     public JsonResult FetchArtist(string name) {
       Console.WriteLine("Fetching artist: {0}", name);
       JArray artists = (JArray)db["artists"];
-      return Json(artists.Children<JObject>().FirstOrDefault(
+      JsonResult artist = Json(artists.Children<JObject>().FirstOrDefault(
         a => a["Nicknames"].ToObject<string[]>().Contains(name, StringComparer.OrdinalIgnoreCase)
       ));
+      Console.WriteLine(artist.Value != null ? "Artist found." : "Artist not found.");
+      return artist;
+    }
+
+    /// <summary>Fetch a character by name.</summary>
+    /// <param name="name">The name of the character to find.</param>
+    /// <returns>A JSON object representing the character.</returns>
+    [HttpGet("fetchCharacter")]
+    public JsonResult FetchCharacter(string name) {
+      Console.WriteLine("Fetching character: {0}", name);
+      JArray characters = (JArray)db["characters"];
+      JsonResult character = Json(characters.Children<JObject>().FirstOrDefault(
+        c => c["Name"].ToObject<string>().Equals(name, StringComparison.OrdinalIgnoreCase)
+      ));
+      Console.WriteLine(character.Value != null ? "Character found." : "Character not found.");
+      return character;
     }
 
     /// <summary>Adds or updates an artist in the database.</summary>
@@ -130,7 +149,7 @@ namespace CompComm.Controllers {
     }
 
 
-
+    /// <summary>Writes the database back to the JSON file.</summary>
     private void UpdateDatabase() {
       string dbPath = Path.Combine(BASE_PHYSICAL_PATH, "database.json");
       using (StreamWriter w = new StreamWriter(dbPath, false, System.Text.Encoding.UTF8))
