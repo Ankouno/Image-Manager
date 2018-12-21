@@ -21,6 +21,7 @@ namespace CompComm.Controllers {
     /// <summary>Set up a new controller.</summary>
     /// <param name="config">The config file to pull parameters from.</param>
     public CommController(IConfiguration config) {
+      Console.OutputEncoding = System.Text.Encoding.UTF8;
       BASE_PHYSICAL_PATH = config["BASE_PHYSICAL_PATH"];
       if (db == null) {
         string dbPath = Path.Combine(BASE_PHYSICAL_PATH, "database.json");
